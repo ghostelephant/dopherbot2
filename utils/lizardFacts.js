@@ -1,0 +1,33 @@
+const lizardFacts = [
+  "Until 2006, it was thought that the Gila monster and the Mexican bearded lizard were the only species of venomous lizards.  Since then, however,several other species of monitor lizards have been shown to produce venom in their oral glands.",
+  "Lizards, as well as snakes and *amphisbaenia*, are a member of the order Squamata.",
+  "Though most lizards have four legs, some species of lizard have long snake-like bodies with no legs at all.",
+  "Members of the Draco genus have wing-like membranes that allow them to glide through the air (it's not flying -- it's falling with style!)",
+  "The Komodo dragon is the largest extant lizard species: they can grow up to 10 feet long and weigh as much as 150 pounds.",
+  "Lizards are primarily carniverous, and are often described as \"Sit-and-wait\" predators due to their reliance on stealth or surprise to catch prey.",
+  "Many smaller lizards eat primarily insects, but the Komodo dragon can eat animals as large as a water buffalo.",
+  "Some species of horned lizard, as a defense mechanism, are able to squirt an aimed stream of blood up to five feet from the corners of their eyes.",
+  "Lizards don't have external ears; instead, they have a circular opening that leads to the eardrum.",
+  "Studies from 2013 and 2014 demonstrate that some lizard species breathe with a unidirectional airflow system: air moves in a loop through the lungs in one direction only.",
+  "Most lizards are egg-laying, but about 20% of lizard species reproduce via live birth.",
+  "Some lizard species are able to reproduce asexually from unfertilized eggs, in a process called \"parthenogenesis.\"  This can even happen in some species that ordinarily reproduce sexually, such as the Komodo dragon!",
+  "Most lizards are active during the day, although some species (such as geckos) are nocturnal.",
+  "Monitor lizards can smell in stereo -- they use their forked tongues to pull scent particles inside their mouths to their Jacobsen's Organ, which interprets the smell on both the left and the right.  This helps them more effectively track prey by smell.",
+  "The common basilisk is sometimes nicknamed the \"Jesus Christ Lizard,\" because it can walk on water!  Young basilisks can run as far as 20 meters across water, while older basilisks can only run a few meters before sinking, but can still swim away from predators.",
+  "Many lizards use camouflage to hide from prey.  Some species, such as the Moorish Gecko, are even able to change color to better match their surroundings.",
+  "Some lizards, such as geckos and skinks, can shed their tails.  The detached tail will continue to writhe after detaching, distracting the predator's attention and allowing the rest of the lizard to flee to safety.  They can partially regenerate their tails over a period of weeks.",
+  "The earliest-known lizard fossils are from a species of iguana called *Tikiguania estesi*, which may date to the Carnian stage of the Triassic period -- about 220 million years ago!  This is debated, however, due to *T. estesi*'s close resemblance to the modern agamid lizard.",
+  "Lizards often demonstrate convergent evolution, with different species independently developing the same or similar features.  For instance, while snakes are the most famous reptiles to demonstrate reduction or loss of limbs, this has also happened independently more than two dozen times in lizard evolution.",
+  "Several lizard species are kept as pets by humans, including bearded dragons, iguanas, anoles, and geckos.",
+  "Antarctica is the only continent without native lizard species.",
+  "Green iguanas are known in some parts of Central America as the \"chicken of the tree\", due to their supposedly chicken-like taste.",
+  "Some lizard toxins are used in medicine, for example in the anti-diabetes drug exenatide.",
+  "Marine iguanas, a water-dwelling lizard species found in the Galapagos Islands, have special glands to help excrete excess salt.  They also expel extra salt around their nostrils by sneezing.",
+  "The Armadillo girdled lizard, native to the western coast of South Africa, has an unusual defense mechanism: when threatened, it will put its tail in its mouth to form a circle and roll into a ball, protecting its softer underside and exposing only its hard armored scales and spined tail.",
+  "The Thorny Devil, native to the western Australian desert, has a false head on its back made of soft tissue.  When threatened, it dips its real head between its front legs, presenting the false head for predators to attack.",
+  "The tokay gecko, native to Asia and some Pacific Islands,  is known for its distinctive mating call.  The sound of its call is what gave the tokay gecko its name; however, some have heard the sound differently -- during the Vietnam War, U.S. soldiers dubbed it the \"Fuck-you Lizard\"!",
+  "Males of the Kikuyu three-horned chameleon, native to Kenya and Tanzania, are easily recognized by their distincive three facial horns, arranged like those of a Triceratops.",
+  "The Jaragua sphaero is the smallest known species of lizard: with most adults measuring just 14 to 18 millimeters from the snout to the base of the tail, they can comfortably stand on a U.S. quarter!  Its geographic range is thought to include only Jaragua National Park, a park on the southern tip of the Baharona Peninsula in the Dominican Republic whose land area is under 500 square kilometers."
+];
+
+module.exports = lizardFacts;
