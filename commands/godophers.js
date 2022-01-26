@@ -13,7 +13,7 @@ const checkIfDophers = str => {
 const bad = e => console.error(`Problem in godophers.js:\n${e}`);
 
 const godophers = ({msg, client, args}) => {
-  if(checkIfDophers(args.join(" "))){
+  if(!args.length || checkIfDophers(args.join(" "))){
     const channel = client.channels.cache.get(msg.channelId);
     try{
       channel.send("<:Logo2:686674358667837517> <:Logo2:686674358667837517> <:Logo2:686674358667837517>")
