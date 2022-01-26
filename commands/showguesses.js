@@ -3,7 +3,8 @@ const showguesses = ({msg, client, guildInfo}) => {
 
   const guesses = guildInfo.currentRound;
   if(!guesses){
-    return msg.reply("No guesses are in yet.");
+    return msg.reply("No guesses are in yet.")
+      .catch(e => console.log(e));
   }
   
   let numGuesses = 0;

@@ -6,7 +6,8 @@ const guess = async ({msg, args, guildInfo}) => {
     return invalidate(msg, "Please enter a number.");
   }
   if(args[0] === "1000"){
-    msg.reply("*Preeeetty* sure you mean 0");
+    msg.reply("*Preeeetty* sure you mean 0")
+      .catch(e => console.log(e));
   }  
   
   let guess = parseInt(args[0]) % 1000;

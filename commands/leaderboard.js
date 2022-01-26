@@ -32,21 +32,24 @@ const getSessionScores = session => {
 const generateTable = (scores, nicknames, final) => {
   let table = "```\n";
   table += (final ? "FINAL SESSION STANDINGS:\n\n" : "LEADERBOARD:\n\n");
-  table += "PLAYER       ║ POINTS ║ GUESSES ║ AVG DIFF\n";
-  table += "═════════════╬════════╬═════════╬═════════\n";
+  table += "PLAYER       ║ PTS ║ #Gs ║ AVGDIFF\n";
+  table += "═════════════╬═════╬═════╬════════\n";
   for(let playerId of Object.keys(scores)
     .sort((a, b) => scores[a].guesses - scores[b].guesses)
     .sort((a, b) => scores[b].points - scores[a].points)
   ){
     table += nicknames[playerId] + " ║ ";
-    table += rightAlign(scores[playerId].points, 6) + " ║ ";
-    table += rightAlign(scores[playerId].guesses, 7) + " ║ ";
-    table += rightAlign(generateAvgDiff(scores[playerId]), 8) + "\n";
+    table += rightAlign(scores[playerId].points, 3) + " ║ ";
+    table += rightAlign(scores[playerId].guesses, 3) + " ║ ";
+    table += rightAlign(generateAvgDiff(scores[playerId]), 7) + "\n";
   }
   return table + "```";
 };
 
 const leaderboard = async({msg, guildInfo, client}, final = false) => {
+  if(guildInfo.currentSession == undefined){
+    return console.log("Leaderboard will not work until a session has been started.");
+  }
   const scores = getSessionScores(guildInfo.currentSession);
   const channel = client.channels.cache.get(msg.channelId);
   channel.send(

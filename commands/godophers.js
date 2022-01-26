@@ -29,7 +29,8 @@ const godophers = ({msg, client, args}) => {
     }
   }
   else{
-    msg.reply("What??  No, go Dophers! <:Logo2:686674358667837517>");
+    msg.reply("What??  No, go Dophers! <:Logo2:686674358667837517>")
+      .catch(e => console.log(e));
   }
 };
 

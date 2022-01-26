@@ -9,7 +9,8 @@ const submitpitch = async ({msg, args, guildInfo}) => {
     parseInt(args[0]) < 0 ||
     parseInt(args[0]) > 1000
   ){
-    return msg.reply("This is not a valid pitch");
+    return msg.reply("This is not a valid pitch")
+      .catch(e => console.log(e));
   }
 
   const pitch = parseInt(args[0]);
@@ -25,7 +26,8 @@ const submitpitch = async ({msg, args, guildInfo}) => {
       console.error(`Problem in submitpitch.js:\n${e}`);
       msg.react("❌");
     });
-    msg.reply(`Pitch submitted!\nType \`${guildInfo.utils.prefix || "?"}confirm ${pitch}\` to confirm, or \`${guildInfo.utils.prefix || "?"}cancel\` if this was a mistake.`);
+    msg.reply(`Pitch submitted!\nType \`${guildInfo.utils.prefix || "?"}confirm ${pitch}\` to confirm, or \`${guildInfo.utils.prefix || "?"}cancel\` if this was a mistake.`)
+      .catch(e => console.log(e));
   }
   catch(e){
     console.error(`Problem in submitpitch.js:\n${e}`);

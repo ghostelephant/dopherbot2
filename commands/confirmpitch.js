@@ -54,12 +54,12 @@ const confirmpitch = async ({msg, args, guildInfo, client}) => {
 
   let note = "**ROUND SUMMARY:**";
   note += "```" + `PITCH: ${pitch}\n\n`
-  note += "Player       │ Guess │ Diff │ Score\n";
-  note += "─────────────┼───────┼──────┼──────";
+  note += "Player       │ Guess │ Diff │ Pts\n";
+  note += "─────────────┼───────┼──────┼────";
   for(let guessObj of scores){
     const {playerId, guess, diff, score} = guessObj;
     const playerName = guildInfo.utils.playerNicknames[playerId];
-    note += `\n${playerName} │ ${rightAlign(guess, 5)} │ ${rightAlign(diff, 4)} │ ${rightAlign(score, 5)}`;
+    note += `\n${playerName} │ ${rightAlign(guess, 5)} │ ${rightAlign(diff, 4)} │ ${rightAlign(score, 3)}`;
     if(score === -5){
       note += " 😬";
     }

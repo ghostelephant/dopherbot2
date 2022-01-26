@@ -10,7 +10,8 @@ const updatenickname = async ({msg, args}) => {
   }
   if(newNickname.length > 12){
     newNickname = newNickname.substring(0, 12);
-    msg.reply(`Nicknames cannot be longer than 12 characters.  This will be shortened to "${newNickname}".`);
+    msg.reply(`Nicknames cannot be longer than 12 characters.  This will be shortened to "${newNickname}".`)
+      .catch(e => console.log(e));
   }
   newNickname += " ".repeat(12 - newNickname.length);
 

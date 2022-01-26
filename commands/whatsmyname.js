@@ -15,7 +15,8 @@ const whatsmyname = async ({msg, guildInfo}) => {
     nickname = msg.author.username.substring(0, 12);
     nickname += " ".repeat(12 - nickname.length);
   }
-  await msg.reply(`Your display name is:\n\`${nickname.trim()}\``);
+  await msg.reply(`Your display name is:\n\`${nickname.trim()}\``)
+    .catch(e => console.log(e));
 
   if(needsToBeSet){
     const mongoClient = new MongoClient(...dbConnect);
