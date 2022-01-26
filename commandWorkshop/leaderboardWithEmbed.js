@@ -59,7 +59,8 @@ const leaderboard = async({msg, guildInfo, client}, final = false) => {
   const channel = client.channels.cache.get(msg.channelId);
   channel.send({embeds: [
     generateEmbed(scores, guildInfo.utils.playerNicknames, final)
-  ]});
+  ]})
+    .catch(e => console.log(e));
 }
 
 const description = "Shows the standings in the current session";

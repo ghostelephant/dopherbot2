@@ -7,7 +7,8 @@ const embed = ({msg, client}) => {
     .setColor("#ffdead")
     .addField("title", "text here");
 
-  channel.send({embeds: [testEmbed]});
+  channel.send({embeds: [testEmbed]})
+    .catch(e => console.log(e));
 };
 
 const description = "tests an embed";

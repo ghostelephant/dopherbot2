@@ -14,6 +14,8 @@ const buildEmbed = (prefix, normalCommands, superCommands) => {
   for(let alias in aliases){
     aliasText += `Use **${prefix}${alias}** for ${prefix}${aliases[alias]}\n`
   }
+
+  const disambigText = `Use one of the following commands for more specific help info:\n\n**${prefix}help gameplay\n${prefix}help admin\n${prefix}help aliases**`;
   
   const embeds = {
     gameplay: new MessageEmbed()
@@ -34,10 +36,20 @@ const buildEmbed = (prefix, normalCommands, superCommands) => {
     disambig: new MessageEmbed()
       .setColor("#ffa500")
       .setTitle("Help")
-      .setDescription(`Use one of the following commands for more specific help info:\n\n**${prefix}help gameplay\n${prefix}help admin\n${prefix}help aliases**`)
+      .setDescription(disambigText)
   };
 
-  return embeds;
+  const rawText = {
+    gameplay: normalCommandText,
+    admin: superCommandText,
+    aliases: aliasText,
+    disambig: disambigText
+  };
+
+  return {
+    embeds,
+    rawText
+  };
 };
 
 const help = ({msg, client, guildInfo, args}) => {
@@ -58,22 +70,19 @@ const help = ({msg, client, guildInfo, args}) => {
     }
   }
 
-  const helpEmbeds = buildEmbed(prefix, normalCommands, superCommands);
+  const {embeds: helpEmbeds} = buildEmbed(prefix, normalCommands, superCommands);
 
-  let embedToPost;
-  if(args.length && args[0].toLowerCase() in helpEmbeds){
-    embedtoPost = helpEmbeds[args[0].toLowerCase()];
-  } else {
-    embedToPost = helpEmbeds.disambiguation;
-  }
+  const embedToPost = ((args.length && args[0].toLowerCase() in helpEmbeds) ?
+    helpEmbeds[args[0].toLowerCase()]
+    :
+    helpEmbeds.disambig
+  );
   
   const channel = client.channels.cache.get(msg.channelId);
   channel.send({embeds: [
-    args.length && args[0].toLowerCase() in helpEmbeds ?
-      helpEmbeds[args[0].toLowerCase()]
-      :
-      helpEmbeds.disambig
-  ]});
+    embedToPost
+  ]})
+    .catch(e => console.log(e));
 };
 
 const description = "Shows this message";

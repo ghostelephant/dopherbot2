@@ -48,7 +48,8 @@ const endseason = async ({msg, client, guildInfo}) => {
     await msg.react(reaction);
     await mongoClient.close();
     const channel = client.channels.cache.get(msg.channelId);
-    channel.send("Good luck next season, Dophers!");
+    channel.send("Good luck next season, Dophers!")
+      .catch(e => console.log(e));
   }
 };
 

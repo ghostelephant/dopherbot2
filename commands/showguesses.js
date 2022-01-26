@@ -18,7 +18,8 @@ const showguesses = ({msg, client, guildInfo}) => {
   }
   channel.send(output + 
     (numGuesses ? "```" : "No guesses yet.```")
-  );
+  )
+    .catch(e => console.log(e));
 }
 
 const description = "Shows the guesses that have been submitted for this pitch";

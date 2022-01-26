@@ -5,7 +5,8 @@ const lizard = ({msg, client}) => {
   const fact = lizardFacts[Math.floor(Math.random() * lizardFacts.length)];
   channel.send(fact)
     .then(post => {
-      post.react("🦎");
+      post.react("🦎")
+        .catch(e => console.log(e));
       return post;
     }).catch(e => console.error(`Problem in lizard.js:\n${e}`));
 };

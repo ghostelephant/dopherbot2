@@ -66,7 +66,8 @@ const confirmpitch = async ({msg, args, guildInfo, client}) => {
   };
   
   const channel = client.channels.cache.get(msg.channelId);
-  channel.send(note + "\n```");
+  channel.send(note + "\n```")
+    .catch(e => console.log(e));
 
   const currentSession = guildInfo.currentSession || [];
   currentSession.push(currentRound);
