@@ -33,7 +33,8 @@ const endseason = async ({msg, client, guildInfo}) => {
       {guildId: msg.guildId},
       {$set: {
         allTime,
-        currentSeason: []
+        currentSeason: [],
+        currentSession: []
       }}
     ).catch(e => {
       setReaction("❌");
