@@ -2,7 +2,7 @@ const {MongoClient} = require("mongodb");
 const {invalidate, dbConfig: {dbName, dbConnect}} = require("../utils");
 
 const guess = async ({msg, args, guildInfo}) => {
-  if(!args.length || isNaN(args[0])){
+  if(!args.length || !args[0].length || isNaN(args[0])){
     return invalidate(msg, "Please enter a number.");
   }
   if(args[0] === "1000"){
