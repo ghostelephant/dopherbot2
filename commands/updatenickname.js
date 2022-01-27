@@ -10,8 +10,8 @@ const updatenickname = async ({msg, args, guildInfo}) => {
     return invalidate(msg, "Please enter at least one non-space character.");
   }
   try{
-    const existingNicknames = Object.values(guildInfo.utils.playerNicknames).map(nick => nick.trim());
-    if(existingNicknames.includes(newNickname)){
+    const existingNicknames = Object.values(guildInfo.utils.playerNicknames).map(nick => nick.trim().toLowerCase());
+    if(existingNicknames.includes(newNickname.toLowerCase())){
       return invalidate(msg, "That nickname has been taken.");
     }
   }
