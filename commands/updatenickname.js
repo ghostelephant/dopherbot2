@@ -1,13 +1,24 @@
 const {MongoClient} = require("mongodb");
 const {invalidate, dbConfig: {dbName, dbConnect}} = require("../utils");
 
-const updatenickname = async ({msg, args}) => {
+const updatenickname = async ({msg, args, guildInfo}) => {
   const mongoClient = new MongoClient(...dbConnect);
 
   let newNickname = args.join(" ").trim();
+
   if(!newNickname.length){
     return invalidate(msg, "Please enter at least one non-space character.");
   }
+  try{
+    const existingNicknames = Object.values(guildInfo.utils.playerNicknames);
+    if(existingNicknames.includes(newNickname)){
+      return invalidate(msg, "That nickname has been taken.");
+    }
+  }
+  catch(e){
+    console.log(e);
+  }
+  
   if(newNickname.length > 12){
     newNickname = newNickname.substring(0, 12);
     msg.reply(`Nicknames cannot be longer than 12 characters.  This will be shortened to "${newNickname}".`)
