@@ -16,7 +16,7 @@ const getSessionScores = session => {
     }
   }
   for(let playerId in scores){
-    scores[playerId].avgdiff = (scores[playerId].points / scores[playerId].guesses);
+    scores[playerId].avgdiff = (scores[playerId].diffSum / scores[playerId].guesses);
   }
   return scores;
 };
