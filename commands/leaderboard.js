@@ -65,9 +65,11 @@ const sortScores = (scores, criteria) => {
 const generateTable = (scoresArray, nicknames, final) => {
   let table = "```\n";
   table += (final ? "FINAL SESSION STANDINGS:\n\n" : "LEADERBOARD:\n\n");
-  table += "PLAYER       ║ PTS ║ #Gs ║ AVGDIFF\n";
-  table += "═════════════╬═════╬═════╬════════\n";
-  for(let scoreObj of scoresArray){
+  table += "PLAYER           ║ PTS ║ #Gs ║ AVGDIFF\n";
+  table += "═════════════════╬═════╬═════╬════════\n";
+  for(let i=0; i<scoresArray.length; i++){
+    scoreObj = scoresArray[i];
+    table += rightAlign(`${i+1}. `, 4);
     table += nicknames[scoreObj.playerId] + " ║ ";
     table += rightAlign(scoreObj.points, 3) + " ║ ";
     table += rightAlign(scoreObj.guesses, 3) + " ║ ";

@@ -47,7 +47,7 @@ const endsession = async ({msg, client, guildInfo}) => {
   finally{
     await msg.react(reaction);
     await mongoClient.close();
-    require("./leaderboard").func({msg, guildInfo, client}, true);
+    require("./leaderboard").func({msg, guildInfo, client, args: []}, true);
   }
 };
 
