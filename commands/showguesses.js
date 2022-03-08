@@ -6,16 +6,25 @@ const showguesses = ({msg, client, guildInfo}) => {
     return msg.reply("No guesses are in yet.")
       .catch(e => console.log(e));
   }
+
+  const guessesSorted = Object.keys(guesses)
+    .filter(key => key !== "pitch")
+    .map(playerId => {
+      return {
+        playerName: guildInfo.utils.playerNicknames[playerId],
+        value: guesses[playerId].guess
+      }
+    })
+    .sort((a, b) => a.guess - b.guess);
   
-  let numGuesses = 0;
+  let numGuesses;
   let output = "Current guesses:\n```";
-  for(let playerId in guesses){
-    if(playerId === "pitch") continue;
+
+  for(let guess of guessesSorted){
     numGuesses++;
-    playerName = guildInfo.utils.playerNicknames[playerId];
-    guess = guesses[playerId].guess;
-    output += `${playerName} |  ${guess}\n`;
+    output += `${guess.playerName} |  ${guess.value}\n`
   }
+
   channel.send(output + 
     (numGuesses ? "```" : "No guesses yet.```")
   )
