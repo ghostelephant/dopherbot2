@@ -12,17 +12,17 @@ const showguesses = ({msg, client, guildInfo}) => {
     .map(playerId => {
       return {
         playerName: guildInfo.utils.playerNicknames[playerId],
-        value: guesses[playerId].guess
+        val: guesses[playerId].guess
       }
     })
-    .sort((a, b) => a.guess - b.guess);
+    .sort((a, b) => a.val - b.val);
   
-  let numGuesses;
+  let numGuesses = 0;
   let output = "Current guesses:\n```";
 
   for(let guess of guessesSorted){
     numGuesses++;
-    output += `${guess.playerName} |  ${guess.value}\n`
+    output += `${guess.playerName} |  ${guess.val}\n`
   }
 
   channel.send(output + 
