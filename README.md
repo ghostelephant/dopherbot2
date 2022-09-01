@@ -17,3 +17,5 @@ Finally, to start the bot, run the following:
 ```
 node bot.js
 ```
+
+Alternatively, to run this in the background, use a process manager like `pm2`
