@@ -11,7 +11,7 @@ const avgDiffToString = avgdiff => {
 
 const parseArguments = args => {
   const fields = {
-    order: [],
+    order: "",
     session: null,
     season: null,
     alltime: false,
@@ -19,13 +19,18 @@ const parseArguments = args => {
   };
 
   args.forEach(arg => {
-    const [name, value] = arg.split("=");
+    const [name, value] = arg
+      .split("=")
+      .map(x => x.toLowerCase());
+
     if(fields.hasOwnProperty(name)){
       if(["help", "alltime"].includes(name)){
         fields[name] = true;
       }
       else if(name === "order"){
-        fields.order.push(value);
+        fields.order += (fields.order.length ?
+          `,${value}` : value
+        );
       }
       else{
         try{
@@ -43,46 +48,6 @@ const parseArguments = args => {
   return fields;
 };
 
-const filterCriteria = args => {
-  const criteriaOptions = [
-    "points", "-points",
-    "avgdiff", "-avgdiff",
-    "guesses", "-guesses"
-  ];
-  const criteria = [];
-  for(let i=args.length - 1; i>=0; i--){
-    const criterion = args[i].toLowerCase();
-    if(criteriaOptions.includes(criterion)){
-      criteria.push(criterion);
-    }
-  }
-  return criteria.length ? criteria : ["avgdiff", "points"];
-};
-
-// const filterCriteria = args => {
-//   orderArgs = args
-//     .filter(arg => arg.length > 6 && arg.substring(0, 6) === "order=")
-//     .map(arg => arg.substring(6))
-//     .join(",")
-//     .split(",")
-//     .filter(x => x);
-
-//   const criteriaOptions = [
-//     "points", "-points",
-//     "avgdiff", "-avgdiff",
-//     "guesses", "-guesses"
-//   ];
-//   const criteria = [];
-//   for(let i=orderArgs.length - 1; i>=0; i--){
-//     const criterion = args[i].toLowerCase();
-//     if(criteriaOptions.includes(criterion)){
-//       criteria.push(criterion);
-//     }
-//   }
-//   return criteria.length ? criteria : ["avgdiff", "points"];
-// };
-
-
 const getOrderCriteria = orderArgs => {
   const criteriaOptions = [
     "points", "-points",
@@ -91,7 +56,7 @@ const getOrderCriteria = orderArgs => {
   ];
   const criteria = [];
   for(let i=orderArgs.length - 1; i>=0; i--){
-    const criterion = args[i].toLowerCase();
+    const criterion = orderArgs[i].toLowerCase();
     if(criteriaOptions.includes(criterion)){
       criteria.push(criterion);
     }
@@ -155,70 +120,28 @@ const generateTable = (scoresArray, nicknames, final) => {
 
 const generateHelpMessage = prefix => {
   let message = "```\n";
-  message += `The ${prefix}leaderboard or ${prefix}lb command defaults to showing the current session, ordered by points then by average diff.\n`;
-  message += "To change the defaults, append any of the following after the command:\n\n";
-  message += '"alltime"\n - All-time since Season 7, when this bot was first used';
-  message += '"order=option1,option2"\n  - Comma-separated, no spaces\n  - Options: points,guesses,avgdiff\n  - Add a minus to the beginning of an option to reverse it\n\n';
-  message += '"season=#"\n  - 7 or 8\n\n';
-  message += '"session=#"\n  - Any valid session within the selected season\n  - Defaults to current season';
-  
+  message += "LEADERBOARD OPTIONS\n";
+  message += `(Command: ${prefix}leaderboard or ${prefix}lb)\n\n`;
+  message += "alltime\n  - All-time since Season 7, when this bot was first used\n  - Default: false\n\n";
+  message += "order=option1,option2\n  - Can be comma-separated, or given as multiple order= options\n  - Options: points, guesses, avgdiff\n  - Add a minus in front of any option to reverse the order\n  - Default: points,avgdiff\n\n";
+  message += "season=#\n  - Specify the season (7 or later)\n  - Default: current season\n\n";
+  message += "session=#\n  - Any valid session within the selected season\n  - Defaults: current session";
   message += "```";
   
   return message;
 }
-
-const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
-  try{
-    if(guildInfo.currentSession == undefined){
-      return console.log("Leaderboard will not work until a session has been started.");
-    }
-    const scores = getSessionScores(guildInfo.currentSession);
-    const criteria = filterCriteria(args);
-    const sortedScoresArray = sortScores(scores, criteria);
-    const table = generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
-    const channel = client.channels.cache.get(msg.channelId);
-    channel.send(table)
-      .catch(e => console.log(e));
-  }
-  catch(e){
-    console.log(e);
-    msg.reply("Sorry, this command appears to have broken something")
-      .catch(e => console.log(e));
-  }
-}
-
-
-
-
-
 
 // const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
 //   try{
 //     if(guildInfo.currentSession == undefined){
 //       return console.log("Leaderboard will not work until a session has been started.");
 //     }
-//     const fields = parseArguments(args);
-//     let message = "hi"
-//     if(fields.help){
-//       message += generateHelpMessage(guildInfo.utils.prefix);
-//     }
-//     else if(fields.alltime){
-//       message += " all time";
-//     }
-//     else{
-//       message += " something else";
-//     };
-
-//     const sortingCriteria = filterCriteria(fields.order);
-
-
-//     // const scores = getSessionScores(guildInfo.currentSession);
-//     // const criteria = filterCriteria(args);
-//     // const sortedScoresArray = sortScores(scores, criteria);
-//     // const table = generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
-
+//     const scores = getSessionScores(guildInfo.currentSession);
+//     const criteria = filterCriteria(args);
+//     const sortedScoresArray = sortScores(scores, criteria);
+//     const table = generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
 //     const channel = client.channels.cache.get(msg.channelId);
-//     channel.send(message)
+//     channel.send(table)
 //       .catch(e => console.log(e));
 //   }
 //   catch(e){
@@ -226,7 +149,49 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
 //     msg.reply("Sorry, this command appears to have broken something")
 //       .catch(e => console.log(e));
 //   }
-// }
+// };
+
+
+
+
+
+
+const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
+  try{
+    if(guildInfo.currentSession == undefined){
+      return console.log("Leaderboard will not work until a session has been started.");
+    }
+
+    const fields = parseArguments(args);
+    let message = "hi"
+    if(fields.help){
+      message += generateHelpMessage(guildInfo.utils.prefix);
+    }
+    else if(fields.alltime){
+      message += " all time";
+    }
+    else{
+      message += " something else";
+    };
+
+    const sortingCriteria = getOrderCriteria(fields.order.split(","));
+
+
+    const scores = getSessionScores(guildInfo.currentSession);
+    // const criteria = filterCriteria(args);
+    const sortedScoresArray = sortScores(scores, sortingCriteria);
+    message += generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
+
+    const channel = client.channels.cache.get(msg.channelId);
+    channel.send(message)
+      .catch(e => console.log(e));
+  }
+  catch(e){
+    console.log(e);
+    msg.reply("Sorry, this command appears to have broken something")
+      .catch(e => console.log(e));
+  }
+};
 
 
 const description = "Shows current session standings.  For more info, run the leaderboard command 'lb help'";
