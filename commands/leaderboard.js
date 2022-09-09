@@ -33,17 +33,10 @@ const parseArguments = args => {
         );
       }
       else{
-        try{
-          const valueInt = parseInt(value);
-          fields[name] = valueInt;
-        }
-        catch(e){
-          fields[name] = "error";
-        }
+        fields[name] = parseInt(value);
       }
     }
   });
-  console.log(fields);
   
   return fields;
 };
@@ -63,8 +56,6 @@ const getOrderCriteria = orderArgs => {
   }
   return criteria.length ? criteria : ["avgdiff", "points"];
 };
-
-
 
 const sortScores = (scores, criteria) => {
   try {
@@ -131,29 +122,89 @@ const generateHelpMessage = prefix => {
   return message;
 }
 
-// const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
-//   try{
-//     if(guildInfo.currentSession == undefined){
-//       return console.log("Leaderboard will not work until a session has been started.");
-//     }
-//     const scores = getSessionScores(guildInfo.currentSession);
-//     const criteria = filterCriteria(args);
-//     const sortedScoresArray = sortScores(scores, criteria);
-//     const table = generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
-//     const channel = client.channels.cache.get(msg.channelId);
-//     channel.send(table)
-//       .catch(e => console.log(e));
-//   }
-//   catch(e){
-//     console.log(e);
-//     msg.reply("Sorry, this command appears to have broken something")
-//       .catch(e => console.log(e));
-//   }
-// };
+const validateSeasonSession = (fields, guildInfo) => {
+  const errors = [];
+  let seasonIdx = null;
+  let sessionIdx = null;
 
+  if(fields.season === null && fields.session === null){
+    return {
+      errors,
+      seasonIdx,
+      sessionIdx
+    };
+  }
 
+  // console.log(`Season: ${fields.season} (${typeof fields.season}), Session: ${fields.session} (${typeof fields.session})`);
 
+  if(fields.season !== null && isNaN(fields.season)){
+    errors.push("To specify a season, please use a number.");
+    fields.season = null;
+  }
+  if(fields.session !== null && isNaN(fields.session)){
+    errors.push("To specify a session, please use a number.");
+    fields.session = null;
+  }
+  if(errors.length){
+    return {
+      errors,
+      seasonIdx,
+      sessionIdx
+    };
+  }
 
+  if(fields.season !== null){
+    if(!guildInfo.firstSeason){
+      errors.push("Please ask your database administrator to add firstSeason to the database; this is required in order to calibrate calculations of previous seasons.");
+      fields.season = null;
+    }
+    else if(fields.season < guildInfo.firstSeason){
+      errors.push(`Season out of range: this bot's data only goes back to Season ${guildInfo.firstSeason}.`);
+      fields.season = null; 
+    }
+    else if(fields.season - guildInfo.firstSeason >= guildInfo.allTime.length){
+      if(fields.season - guildInfo.firstSeason > guildInfo.allTime.length){
+        errors.push("Season out of range.");
+      }
+      fields.season = null;
+    }
+    else{
+      seasonIdx = fields.season - guildInfo.firstSeason;
+    }
+  }
+
+  let seasonToCheck;
+  if(fields.season === null || seasonIdx === guildInfo.allTime.length){
+    seasonToCheck = guildInfo.currentSeason;
+  }
+  else if(fields.season !== null && fields.season - guildInfo.firstSeason < guildInfo.allTime.length){
+    seasonToCheck = guildInfo.allTime[fields.season - guildInfo.firstSeason];
+  }
+
+  if(fields.session !== null){
+    if(!seasonToCheck || !Array.isArray(seasonToCheck)){
+      errors.push("Something weird happened finding the season you entered.");
+      fields.session = null;
+    }
+    else if(seasonToCheck === guildInfo.currentSeason && fields.session - 1 === seasonToCheck.length){
+      errors.push("Hint: you don't need to specify a season or session to show the current session's leaderboard!");
+      fields.session = null;
+    }
+    else if(!seasonToCheck[fields.session - 1]){
+      errors.push("Session out of range.");
+      fields.session = null;
+    }
+    else{
+      sessionIdx = fields.session - 1;
+    }
+  }
+
+  return {
+    errors,
+    seasonIdx,
+    sessionIdx
+  };
+}
 
 
 const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
@@ -163,27 +214,39 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
     }
 
     const fields = parseArguments(args);
-    let message = "hi"
+    let message = ""
     if(fields.help){
       message += generateHelpMessage(guildInfo.utils.prefix);
     }
-    else if(fields.alltime){
-      message += " all time";
-    }
     else{
-      message += " something else";
-    };
+      const {errors, seasonIdx, sessionIdx} = validateSeasonSession(
+        fields, guildInfo
+      );
+      
+      if(errors.length){
+        message += errors.join("\n");
+        message += "\nShowing current session's leaderboard.";
+      }
 
-    const sortingCriteria = getOrderCriteria(fields.order.split(","));
+      const sortingCriteria = getOrderCriteria(fields.order.split(","));
 
+      let dataUniverse = guildInfo.currentSession;
+      if(sessionIdx !== null){
+        dataUniverse = (seasonIdx === null ?
+          guildInfo.currentSeason[sessionIdx]
+          :
+          guildInfo.allTime[seasonIdx][sessionIdx]
+        );
+      }
+      const scores = getSessionScores(dataUniverse);
 
-    const scores = getSessionScores(guildInfo.currentSession);
-    // const criteria = filterCriteria(args);
-    const sortedScoresArray = sortScores(scores, sortingCriteria);
-    message += generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
+      const sortedScoresArray = sortScores(scores, sortingCriteria);
+
+      message += generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
+    }
 
     const channel = client.channels.cache.get(msg.channelId);
-    channel.send(message)
+    channel.send(message || "Something went wrong")
       .catch(e => console.log(e));
   }
   catch(e){
