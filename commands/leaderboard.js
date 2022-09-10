@@ -93,15 +93,31 @@ const sortScores = (scores, criteria) => {
   }
 };
 
-const generateTable = (scoresArray, nicknames, final) => {
+const generateTable = (scoresArray, guildInfo, fields, final) => {
+  const {season, session, alltime} = fields;
+  
+  let lbText = "";
+  if(alltime){
+    lbText += "ALL-TIME";
+  }
+  else if(!season && !session){
+    lbText += "CURRENT";
+  }
+  else if(season && !session){
+    lbText += `COMBINED SEASON ${season}`;
+  }
+  else if(session){
+    lbText += `SEASON ${season || guildInfo.firstSeason + guildInfo.allTime.length}, SESSION ${session}`;
+  }
+
   let table = "```\n";
-  table += (final ? "FINAL SESSION STANDINGS:\n\n" : "LEADERBOARD:\n\n");
+  table += (final ? "FINAL SESSION STANDINGS:\n\n" : `${lbText} LEADERBOARD:\n\n`);
   table += "    PLAYER       ║ PTS ║ #Gs ║ AVGDIFF\n";
   table += "═════════════════╬═════╬═════╬════════\n";
   for(let i=0; i<scoresArray.length; i++){
     scoreObj = scoresArray[i];
     table += rightAlign(`${i+1}. `, 4);
-    table += nicknames[scoreObj.playerId] + " ║ ";
+    table += guildInfo.utils.playerNicknames[scoreObj.playerId] + " ║ ";
     table += rightAlign(scoreObj.points, 3) + " ║ ";
     table += rightAlign(scoreObj.guesses, 3) + " ║ ";
     table += rightAlign(avgDiffToString(scoreObj.avgdiff), 7) + "\n";
@@ -116,7 +132,7 @@ const generateHelpMessage = prefix => {
   message += "alltime\n  - All-time since Season 7, when this bot was first used\n  - Default: false\n\n";
   message += "order=option1,option2\n  - Can be comma-separated, or given as multiple order= options\n  - Options: points, guesses, avgdiff\n  - Add a minus in front of any option to reverse the order\n  - Default: points,avgdiff\n\n";
   message += "season=#\n  - Specify the season (7 or later)\n  - Default: current season\n\n";
-  message += "session=#\n  - Any valid session within the selected season\n  - Defaults: current session";
+  message += "session=#\n  - Any valid session within the selected season\n  - Default: current session";
   message += "```";
   
   return message;
@@ -134,8 +150,6 @@ const validateSeasonSession = (fields, guildInfo) => {
       sessionIdx
     };
   }
-
-  // console.log(`Season: ${fields.season} (${typeof fields.season}), Session: ${fields.session} (${typeof fields.session})`);
 
   if(fields.season !== null && isNaN(fields.season)){
     errors.push("To specify a season, please use a number.");
@@ -162,10 +176,8 @@ const validateSeasonSession = (fields, guildInfo) => {
       errors.push(`Season out of range: this bot's data only goes back to Season ${guildInfo.firstSeason}.`);
       fields.season = null; 
     }
-    else if(fields.season - guildInfo.firstSeason >= guildInfo.allTime.length){
-      if(fields.season - guildInfo.firstSeason > guildInfo.allTime.length){
-        errors.push("Season out of range.");
-      }
+    else if(fields.season - guildInfo.firstSeason > guildInfo.allTime.length){
+      errors.push("Season out of range.");
       fields.season = null;
     }
     else{
@@ -184,14 +196,18 @@ const validateSeasonSession = (fields, guildInfo) => {
   if(fields.session !== null){
     if(!seasonToCheck || !Array.isArray(seasonToCheck)){
       errors.push("Something weird happened finding the season you entered.");
+      fields.season = null;
       fields.session = null;
     }
     else if(seasonToCheck === guildInfo.currentSeason && fields.session - 1 === seasonToCheck.length){
       errors.push("Hint: you don't need to specify a season or session to show the current session's leaderboard!");
+      seasonIdx = null;
+      fields.season = null;
       fields.session = null;
     }
     else if(!seasonToCheck[fields.session - 1]){
       errors.push("Session out of range.");
+      fields.season = null;
       fields.session = null;
     }
     else{
@@ -205,6 +221,27 @@ const validateSeasonSession = (fields, guildInfo) => {
     sessionIdx
   };
 }
+
+const calculateScores = dataUniverse => {
+  let flattenedData = [];
+
+  if(dataUniverse.multi){
+    dataUniverse.data.forEach(season => 
+      season.forEach(session => {
+        while(session.length){
+          flattenedData.push(
+            session.shift()
+          );
+        }
+      })
+    );
+  }
+  else{
+    flattenedData = dataUniverse.data;
+  }
+
+  return getSessionScores(flattenedData);
+};
 
 
 const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
@@ -230,23 +267,50 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
 
       const sortingCriteria = getOrderCriteria(fields.order.split(","));
 
-      let dataUniverse = guildInfo.currentSession;
-      if(sessionIdx !== null){
-        dataUniverse = (seasonIdx === null ?
+      const dataUniverse = {
+        multi: false,
+        data: guildInfo.currentSession
+      };
+
+      if(fields.alltime){
+        dataUniverse.multi = true;
+        dataUniverse.data = [
+          ...guildInfo.allTime,
+          [
+            ...guildInfo.currentSeason,
+            guildInfo.currentSession
+          ]
+        ];
+      }
+      else if(sessionIdx !== null){
+        dataUniverse.data = ((seasonIdx === guildInfo.allTime.length || seasonIdx === null) ?
           guildInfo.currentSeason[sessionIdx]
           :
           guildInfo.allTime[seasonIdx][sessionIdx]
         );
       }
-      const scores = getSessionScores(dataUniverse);
+      else if(seasonIdx !== null){
+        dataUniverse.multi = true;
+        dataUniverse.data = [seasonIdx === guildInfo.allTime.length ?
+          [
+            ...guildInfo.currentSeason,
+            guildInfo.currentSession
+          ]
+          :
+          guildInfo.allTime[seasonIdx]
+        ];
+      }
+
+
+      const scores = calculateScores(dataUniverse);
 
       const sortedScoresArray = sortScores(scores, sortingCriteria);
 
-      message += generateTable(sortedScoresArray, guildInfo.utils.playerNicknames, final);
+      message += generateTable(sortedScoresArray, guildInfo, fields, final);
     }
 
     const channel = client.channels.cache.get(msg.channelId);
-    channel.send(message || "Something went wrong")
+    channel.send(message || "Whoops! Something went wrong")
       .catch(e => console.log(e));
   }
   catch(e){
