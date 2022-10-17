@@ -52,7 +52,7 @@ const confirmpitch = async ({msg, args, guildInfo, client}) => {
   }
   scores.sort((a, b) => a.diff - b.diff);
 
-  let isMinusFive = false;
+  let minusFiveCount = 0;
   const minusFiveUrl = process.env.MINUS_FIVE_URL;
 
   let note = "**ROUND SUMMARY:**";
@@ -65,14 +65,14 @@ const confirmpitch = async ({msg, args, guildInfo, client}) => {
     note += `\n${playerName} │ ${rightAlign(guess, 5)} │ ${rightAlign(diff, 4)} │ ${rightAlign(score, 3)}`;
     if(score === -5){
       note += " 😬";
-      isMinusFive = true;
+      minusFiveCount++;
     }
   };
   
   const channel = client.channels.cache.get(msg.channelId);
   channel.send(note + "\n```")
     .then(() => {
-      if(isMinusFive && minusFiveUrl){
+      while(minusFiveUrl && minusFiveCount-- > 0){
         channel.send(minusFiveUrl)
           .catch(e => console.log(e));
       }
