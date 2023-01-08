@@ -16,15 +16,22 @@ const addsuperuser = async ({msg, args, guildInfo}) => {
   }
 
   let sU = args[0];
-  if(!args.length || sU.substring(0, 3) !== "<@!" || sU.substring(sU.length - 1) !== ">"){
+  if(!args.length || sU.substring(0, 2) !== "<@" || sU.substring(sU.length - 1) !== ">"){
     return invalidate(msg, "Please enter a valid user.");
   }
 
-  sU = sU.substring(3, sU.length - 1);
+  let suStart = 0;
+  while(sU[suStart] && isNaN(sU[suStart])){
+    suStart++;
+  }
+  if(suStart >= sU.length){
+    return invalidate(msg, "Please enter a valid user.");
+  }
+
+  sU = sU.substring(suStart, sU.indexOf(">"));
   if(isNaN(sU)){
     return invalidate("Please enter a valid user.");
   }
-
   const mongoClient = new MongoClient(...dbConnect);
   let reaction;
   const setReaction = emoj => reaction = emoj;
