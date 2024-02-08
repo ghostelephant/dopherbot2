@@ -2,6 +2,7 @@ const aliases = {
   dopherbot2prefix: "setprefix",
   g: "guess",
   s: "guess",
+  swing: "guess",
   guesses: "showguesses",
   go: "godophers",
   callme: "updatenickname",
