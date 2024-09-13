@@ -16,6 +16,7 @@ const parseArguments = args => {
     season: null,
     alltime: false,
     help: false,
+    last: null
   };
 
   args.forEach(arg => {
@@ -111,7 +112,11 @@ const generateTable = (scoresArray, guildInfo, fields, final) => {
   }
 
   let table = "```\n";
-  table += (final ? "FINAL SESSION STANDINGS:\n\n" : `${lbText} LEADERBOARD:\n\n`);
+  table += (final ?
+    "FINAL SESSION STANDINGS:\n\n"
+    :
+    `${lbText} LEADERBOARD${fields.last ? ` (last ${fields.last} guesses)`: ""}:\n\n`
+  );
   table += "    PLAYER       ║ PTS ║ #Gs ║ AVGDIFF\n";
   table += "═════════════════╬═════╬═════╬════════\n";
   for(let i=0; i<scoresArray.length; i++){
@@ -138,12 +143,13 @@ const generateHelpMessage = prefix => {
   return message;
 }
 
-const validateSeasonSession = (fields, guildInfo) => {
+const validateSeasonSessionLast = (fields, guildInfo) => {
   const errors = [];
   let seasonIdx = null;
   let sessionIdx = null;
+  let lastIdx = null;
 
-  if(fields.season === null && fields.session === null){
+  if(fields.season === null && fields.session === null && fields.last === null){
     return {
       errors,
       seasonIdx,
@@ -215,10 +221,25 @@ const validateSeasonSession = (fields, guildInfo) => {
     }
   }
 
+  if(fields.last !== null){
+    if(fields.alltime || (fields.session === null && fields.season !== null)){
+      errors.push("Last argument cannot be stacked with a season-long or all-time leaderboard.");
+      fields.last = null;
+    }
+    else if(fields.last > guildInfo.currentSession.length){
+      errors.push(`There have only been ${guildInfo.currentSession.length} pitches this session; cannot show last ${fields.last}`);
+      fields.last = null;
+    }
+    else{
+      lastIdx = guildInfo.currentSession.length - fields.last;
+    }
+  }
+
   return {
     errors,
     seasonIdx,
-    sessionIdx
+    sessionIdx,
+    lastIdx
   };
 }
 
@@ -256,13 +277,16 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
       message += generateHelpMessage(guildInfo.utils.prefix);
     }
     else{
-      const {errors, seasonIdx, sessionIdx} = validateSeasonSession(
+      const {errors, seasonIdx, sessionIdx, lastIdx} = validateSeasonSessionLast(
         fields, guildInfo
       );
       
       if(errors.length){
         message += errors.join("\n");
-        message += "\nShowing current session's leaderboard.";
+        if(seasonIdx === null && sessionIdx === null)
+          message += "\nShowing current session's leaderboard.";
+        else
+          message += "\nIncluding all guesses.";
       }
 
       const sortingCriteria = getOrderCriteria(fields.order.split(","));
@@ -300,6 +324,10 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
           guildInfo.allTime[seasonIdx]
         ];
       }
+      if(lastIdx && !dataUniverse.multi){
+        dataUniverse.data = dataUniverse.data.slice(lastIdx);
+      }
+      
 
 
       const scores = calculateScores(dataUniverse);
