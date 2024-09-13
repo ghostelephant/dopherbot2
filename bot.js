@@ -11,8 +11,8 @@ const commands = require("./commands");
 const utils = require("./utils");
 
 client.on("messageCreate", msg => {
-  // utils.getGuildInfo(msg.guildId).then(guildInfo => {
-  utils.getGuildInfo("450000293913034762").then(guildInfo => {
+  utils.getGuildInfo(msg.guildId).then(guildInfo => {
+  // utils.getGuildInfo("450000293913034762").then(guildInfo => {
     const prefix = guildInfo.utils.prefix || "?";
 
     if(msg.content.substring(0, prefix.length) === prefix){
