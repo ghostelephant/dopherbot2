@@ -1,13 +1,6 @@
 const {rightAlign, getSessionScores} = require("../utils");
 
-const avgDiffToString = avgdiff => {
-  avgdiff = Math.floor(10 * avgdiff);
-  avgdiff /= 10;
-  if(avgdiff === Math.floor(avgdiff)){
-    avgdiff += ".0";
-  }
-  return "" + avgdiff;
-};
+const {avgDiffToString} = require("../utils");
 
 const parseArguments = args => {
   const fields = {
@@ -108,7 +101,7 @@ const generateTable = (scoresArray, guildInfo, fields, final) => {
     lbText += `COMBINED SEASON ${season}`;
   }
   else if(session){
-    lbText += `SEASON ${season || guildInfo.firstSeason + guildInfo.allTime.length}, SESSION ${session}`;
+    lbText += `SEASON ${season || guildInfo.utils.firstSeason + guildInfo.allTime.length}, SESSION ${session}`;
   }
 
   let table = "```\n";
@@ -174,20 +167,20 @@ const validateSeasonSessionLast = (fields, guildInfo) => {
   }
 
   if(fields.season !== null){
-    if(!guildInfo.firstSeason){
-      errors.push("Please ask your database administrator to add firstSeason to the database; this is required in order to calibrate calculations of previous seasons.");
+    if(!guildInfo.utils.firstSeason){
+      errors.push("Please ask your database administrator to add firstSeason to the database under utils; this is required in order to calibrate calculations of previous seasons.");
       fields.season = null;
     }
-    else if(fields.season < guildInfo.firstSeason){
-      errors.push(`Season out of range: this bot's data only goes back to Season ${guildInfo.firstSeason}.`);
+    else if(fields.season < guildInfo.utils.firstSeason){
+      errors.push(`Season out of range: this bot's data only goes back to Season ${guildInfo.utils.firstSeason}.`);
       fields.season = null; 
     }
-    else if(fields.season - guildInfo.firstSeason > guildInfo.allTime.length){
+    else if(fields.season - guildInfo.utils.firstSeason > guildInfo.allTime.length){
       errors.push("Season out of range.");
       fields.season = null;
     }
     else{
-      seasonIdx = fields.season - guildInfo.firstSeason;
+      seasonIdx = fields.season - guildInfo.utils.firstSeason;
     }
   }
 
@@ -195,8 +188,8 @@ const validateSeasonSessionLast = (fields, guildInfo) => {
   if(fields.season === null || seasonIdx === guildInfo.allTime.length){
     seasonToCheck = guildInfo.currentSeason;
   }
-  else if(fields.season !== null && fields.season - guildInfo.firstSeason < guildInfo.allTime.length){
-    seasonToCheck = guildInfo.allTime[fields.season - guildInfo.firstSeason];
+  else if(fields.season !== null && fields.season - guildInfo.utils.firstSeason < guildInfo.allTime.length){
+    seasonToCheck = guildInfo.allTime[fields.season - guildInfo.utils.firstSeason];
   }
 
   if(fields.session !== null){
