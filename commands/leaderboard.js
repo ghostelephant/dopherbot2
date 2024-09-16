@@ -110,14 +110,14 @@ const generateTable = (scoresArray, guildInfo, fields, final) => {
     :
     `${lbText} LEADERBOARD${fields.last ? ` (last ${fields.last} guesses)`: ""}:\n\n`
   );
-  table += "    PLAYER       ║ PTS ║ #Gs ║ AVGDIFF\n";
-  table += "═════════════════╬═════╬═════╬════════\n";
+  table += "    PLAYER       ║  PTS ║  #Gs ║ AVGDIFF\n";
+  table += "═════════════════╬══════╬══════╬════════\n";
   for(let i=0; i<scoresArray.length; i++){
     scoreObj = scoresArray[i];
     table += rightAlign(`${i+1}. `, 4);
     table += guildInfo.utils.playerNicknames[scoreObj.playerId] + " ║ ";
-    table += rightAlign(scoreObj.points, 3) + " ║ ";
-    table += rightAlign(scoreObj.guesses, 3) + " ║ ";
+    table += rightAlign(scoreObj.points, 4) + " ║ ";
+    table += rightAlign(scoreObj.guesses, 4) + " ║ ";
     table += rightAlign(avgDiffToString(scoreObj.avgdiff), 7) + "\n";
   }
   return table + "```";
@@ -136,13 +136,12 @@ const generateHelpMessage = prefix => {
   return message;
 }
 
-const validateSeasonSessionLast = (fields, guildInfo) => {
+const validateSeasonSession = (fields, guildInfo) => {
   const errors = [];
   let seasonIdx = null;
   let sessionIdx = null;
-  let lastIdx = null;
 
-  if(fields.season === null && fields.session === null && fields.last === null){
+  if(fields.season === null && fields.session === null){
     return {
       errors,
       seasonIdx,
@@ -214,25 +213,10 @@ const validateSeasonSessionLast = (fields, guildInfo) => {
     }
   }
 
-  if(fields.last !== null){
-    if(fields.alltime || (fields.session === null && fields.season !== null)){
-      errors.push("Last argument cannot be stacked with a season-long or all-time leaderboard.");
-      fields.last = null;
-    }
-    else if(fields.last > guildInfo.currentSession.length){
-      errors.push(`There have only been ${guildInfo.currentSession.length} pitches this session; cannot show last ${fields.last}`);
-      fields.last = null;
-    }
-    else{
-      lastIdx = guildInfo.currentSession.length - fields.last;
-    }
-  }
-
   return {
     errors,
     seasonIdx,
-    sessionIdx,
-    lastIdx
+    sessionIdx
   };
 }
 
@@ -257,6 +241,30 @@ const calculateScores = dataUniverse => {
   return getSessionScores(flattenedData);
 };
 
+const validateLast = (last, dataUniverse) => {
+  let lastIdx = null;
+  const lastErrors = [];
+
+  if(last === null){
+    return {lastIdx, lastErrors};
+  }
+  
+  if(dataUniverse.multi){
+    lastErrors.push("Last argument cannot be stacked with a season-long or all-time leaderboard.");
+    lastErrors.push("Showing all guesses.");
+    return {lastIdx, lastErrors};
+  }
+
+
+  if(dataUniverse.data.length < last){
+    lastErrors.push(`There are only ${dataUniverse.data.length} rounds; cannot show last ${last}. Showing all guesses.`);
+    return {lastIdx, lastErrors};
+  }
+
+  lastIdx = dataUniverse.data.length - last;
+  return {lastIdx, lastErrors};
+};
+
 
 const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
   try{
@@ -270,16 +278,13 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
       message += generateHelpMessage(guildInfo.utils.prefix);
     }
     else{
-      const {errors, seasonIdx, sessionIdx, lastIdx} = validateSeasonSessionLast(
+      const {errors, seasonIdx, sessionIdx} = validateSeasonSession(
         fields, guildInfo
       );
       
       if(errors.length){
         message += errors.join("\n");
-        if(seasonIdx === null && sessionIdx === null)
-          message += "\nShowing current session's leaderboard.";
-        else
-          message += "\nIncluding all guesses.";
+        message += "\nShowing current session's leaderboard.";
       }
 
       const sortingCriteria = getOrderCriteria(fields.order.split(","));
@@ -317,11 +322,20 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
           guildInfo.allTime[seasonIdx]
         ];
       }
-      if(lastIdx && !dataUniverse.multi){
+      
+      const {lastIdx, lastErrors} = validateLast(
+        fields.last,
+        dataUniverse
+        );
+        
+      if(lastErrors.length){
+        message += message.length ? "\n" : "";
+        message += lastErrors.join("\n");
+        fields.last = null;
+      }
+      else{
         dataUniverse.data = dataUniverse.data.slice(lastIdx);
       }
-      
-
 
       const scores = calculateScores(dataUniverse);
 
