@@ -15,9 +15,16 @@ const endsession = async ({msg, client, guildInfo}) => {
     return invalidate(msg, "You do not have permission to do this.");
   }
 
+  const isScrimmage = guildInfo.utils?.isScrimmage || false;
+
   const currentSession = guildInfo.currentSession || [];
   const currentSeason = guildInfo.currentSeason || [];
-  currentSeason.push(currentSession);
+  const scrimmages = guildInfo.scrimmages || [];
+  
+  if(isScrimmage)
+    scrimmages.push(currentSession);
+  else
+    currentSeason.push(currentSession);
 
   const mongoClient = new MongoClient(...dbConnect);
   let reaction;
@@ -29,12 +36,15 @@ const endsession = async ({msg, client, guildInfo}) => {
     const db = mongoClient.db(dbName);
     const coll = db.collection("gameplay");
 
+    const data = {
+      [(isScrimmage ? "scrimmages" : "currentSeason")]: (isScrimmage ? scrimmages : currentSeason),
+      currentSession: [],
+      "utils.isScrimmage": false
+    }
+
     await coll.updateOne(
       {guildId: msg.guildId},
-      {$set: {
-        currentSeason,
-        currentSession: []
-      }}
+      {$set: data}
     ).catch(e => {
       setReaction("❌");
       console.error(`Problem in endsession.js:\n${e}`);
