@@ -2,7 +2,7 @@ const {rightAlign, getSessionScores} = require("../utils");
 
 const {avgDiffToString} = require("../utils");
 
-const parseArguments = args => {
+const parseArguments = ({args, guildInfo}) => {
   const fields = {
     order: "",
     session: null,
@@ -27,7 +27,7 @@ const parseArguments = args => {
         );
       }
       else if(name === "season" && (!value || value.toLowerCase === "current")){
-        fields.season = guildInfo.utils.firstSeason + guildInfo.allTime.length;
+        fields.season = `${guildInfo.utils.firstSeason + guildInfo.allTime.length}`;
       }
       else{
         fields[name] = parseInt(value);
@@ -275,7 +275,7 @@ const leaderboard = async({msg, guildInfo, client, args}, final = false) => {
       return console.log("Leaderboard will not work until a session has been started.");
     }
 
-    const fields = parseArguments(args);
+    const fields = parseArguments({args, guildInfo});
     let message = ""
     if(fields.help){
       message += generateHelpMessage(guildInfo.utils.prefix);
