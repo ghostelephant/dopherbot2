@@ -26,7 +26,7 @@ const parseArguments = ({args, guildInfo}) => {
           `,${value}` : value
         );
       }
-      else if(name === "season" && (!value || value.toLowerCase === "current")){
+      else if(name === "season" && (!value || value.toLowerCase() === "current")){
         fields.season = `${guildInfo.utils.firstSeason + guildInfo.allTime.length}`;
       }
       else{
